@@ -591,13 +591,14 @@ type OktaProvider struct {
 	// to be stored in the keyring.
 	OktaSessionCookieKey string
 	OktaAccountName      string
+	KeyringPrefix        string
 	MFAConfig            MFAConfig
 	AwsRegion            string
 }
 
 func (p *OktaProvider) Retrieve() (sts.Credentials, string, error) {
 	log.Debugf("Using okta provider (%s)", p.OktaAccountName)
-	item, err := p.Keyring.Get(p.OktaAccountName)
+	item, err := p.Keyring.Get(p.KeyringPrefix + p.OktaAccountName)
 	if err != nil {
 		log.Debugf("Couldnt get okta creds from keyring: %s", err)
 		return sts.Credentials{}, "", err
@@ -638,7 +639,7 @@ func (p *OktaProvider) Retrieve() (sts.Credentials, string, error) {
 }
 
 func (p *OktaProvider) GetSAMLLoginURL() (*url.URL, error) {
-	item, err := p.Keyring.Get("okta-creds")
+	item, err := p.Keyring.Get(p.KeyringPrefix + p.OktaAccountName)
 	if err != nil {
 		log.Debugf("couldnt get okta creds from keyring: %s", err)
 		return &url.URL{}, err

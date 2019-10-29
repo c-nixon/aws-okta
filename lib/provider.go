@@ -213,6 +213,15 @@ func (p *Provider) getOktaAccountName() string {
 	return "okta-creds-" + oktaAccountName
 }
 
+func (p *Provider) getKeyringPrefix() string {
+	keyringPrefix, profile, err := p.profiles.GetValue(p.profile, "keyring_prefix")
+	if err != nil {
+		return ""
+	}
+  log.Debugf("Using keynamePrefix: %s from profile: %s", keyringPrefix, profile)
+	return keyringPrefix
+}
+
 func (p *Provider) getSamlSessionCreds() (sts.Credentials, error) {
 	var profileARN string
 	var ok bool
@@ -223,6 +232,7 @@ func (p *Provider) getSamlSessionCreds() (sts.Credentials, error) {
 	}
 	oktaSessionCookieKey := p.getOktaSessionCookieKey()
 	oktaAccountName := p.getOktaAccountName()
+	keyringPrefix := p.getKeyringPrefix()
 
 	// if the assumable role is passed it have it override what is in the profile
 	if p.AssumeRoleArn != "" {
@@ -251,6 +261,7 @@ func (p *Provider) getSamlSessionCreds() (sts.Credentials, error) {
 		OktaAwsSAMLUrl:       oktaAwsSAMLUrl,
 		OktaSessionCookieKey: oktaSessionCookieKey,
 		OktaAccountName:      oktaAccountName,
+		KeyringPrefix:        keyringPrefix,
 	}
 
 	if region := p.profiles[source]["region"]; region != "" {
